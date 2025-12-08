@@ -1,0 +1,47 @@
+<!-- templates/main_app/index.html -->
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Корпус русского языка</title>
+    <style>
+        label, input, button {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Национальный корпус русского языка</h1>
+
+    <form id="corpus-search-form" action="/search/" method="post">
+        {% csrf_token %}
+        <label for="search-term">Введите слово для поиска:</label>
+        <input type="text" id="search-term" name="search_term" placeholder="Например, дом" required/>
+        <button type="submit">Искать</button>
+    </form>
+
+    <div id="result-message"></div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('#corpus-search-form').submit(function(e){
+        e.preventDefault();
+        $.ajax({
+            type: $(this).attr('method'),
+            url: $(this).attr('action'),
+            data: $(this).serialize(),
+            success: function(data){
+                $('#result-message').text(data.message || 'Операция выполнена.');
+            },
+            error: function(xhr, status, error){
+                $('#result-message').text('Возникла ошибка при выполнении запроса.');
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>
