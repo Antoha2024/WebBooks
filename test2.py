@@ -18,6 +18,9 @@ def extract_keywords(text):
     decoded_words = tokenizer.convert_ids_to_tokens(most_important_words)
     return decoded_words
 
-input_text = input("Введите текст: ")
-keywords = extract_keywords(input_text)
-print(f"Ключевые слова: {keywords}")
+
+input_text = "Пример текста"
+print(input_text)
+#input_text = input("Введите текст: ")
+#keywords = extract_keywords(input_text)
+#print(f"Ключевые слова: {keywords}")

@@ -8,36 +8,38 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
-# Загрузка и настройка transformer-модели
+# Загрузка и настройка трансформер-модели
 model_name = "DeepPavlov/rubert-base-cased-conversational"
 tokenizer = BertTokenizerFast.from_pretrained(model_name)
 model = BertModel.from_pretrained(model_name)
 
-# Фунция для выбора ключевых слов
+# Функция для выбора ключевых слов
 def extract_keywords(text):
     inputs = tokenizer(text, padding=True, truncation=True, max_length=512, return_tensors="pt")
     outputs = model(**inputs)
     embeddings = outputs.last_hidden_state.mean(dim=1)
 
-    # Берём первые 10 важнейших слов (упрощённая реализация)
-    top_n = 10
-    most_important_words = sorted(inputs.input_ids.squeeze().tolist(), reverse=True)[:top_n]
-    decoded_words = tokenizer.convert_ids_to_tokens(most_important_words)
-    return decoded_words
+    # Преобразуем токены обратно в слова и получаем топ-N значимых слов
+    tokens = tokenizer.tokenize(text)
+    token_embeddings = outputs.last_hidden_state[0].detach().cpu().numpy()
+    importance_scores = [(i, score) for i, score in enumerate(token_embeddings.sum(axis=-1))]
+    important_indices = sorted(importance_scores, key=lambda x: x[1], reverse=True)[:10]
+    important_words = [tokens[i] for i, _ in important_indices]
+    return important_words
 
 # Часть для автоматического взаимодействия с сайтом
 def search_on_ruscorpora(keywords):
-    # Установка драйвера chrome
+    # Установка драйвера Chrome
     driver_path = ChromeDriverManager().install()
     service = Service(executable_path=driver_path)
 
     with webdriver.Chrome(service=service) as driver:
         # Переходим на главную страницу сайта
-        driver.get('https://ruscorpora.ru/search')
+        driver.get('https://ruscorpora.ru/')
         
         # Ожидаем появление формы поиска
         wait = WebDriverWait(driver, 10)
-        input_field = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "the-input__input")))
+        input_field = wait.until(EC.visibility_of_element_located((By.ID, "q")))
         
         # Проходим через каждое ключевое слово
         results = {}
@@ -47,28 +49,27 @@ def search_on_ruscorpora(keywords):
             input_field.send_keys(keyword)
             
             # Находим кнопку поиска и нажимаем её
-            buttons = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".button--color-colored.medium.button--mode-default.button")))
-            first_search_button = buttons[0]
-            first_search_button.click()
+            search_button = wait.until(EC.element_to_be_clickable((By.NAME, "submit")))
+            search_button.click()
             
-            # Дождёмся полного рендеринга страницы
-            time.sleep(5)
+            # Дожидаемся отображения результатов
+            wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "hit")))
             
-            # Парсим первый найденный абзац с результатом
+            # Находим выделенные слова и контекст вокруг них
             highlighted_words = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, '.hit.word i')))
             if len(highlighted_words) > 0:
                 first_highlighted_word = highlighted_words[0]
-                parent_paragraph = first_highlighted_word.find_element(By.XPATH, "./ancestor::p")
-                paragraph_text = parent_paragraph.text
+                parent_element = first_highlighted_word.find_element(By.XPATH, "./ancestor::*[@class='example']")
+                context = parent_element.text
                 
                 # Сохраняем результат для текущего ключевого слова
-                results[keyword] = paragraph_text
+                results[keyword] = context
         
         return results
 
 # Основной поток выполнения
 if __name__ == "__main__":
-    input_text = input("Введите текст: ")
+    input_text = "Программирование на Python становится всё популярнее."
     keywords = extract_keywords(input_text)
     print(f"\nВыделенные ключевые слова: {keywords}\n")
 
