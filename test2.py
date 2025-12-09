@@ -19,7 +19,7 @@ def extract_keywords(text):
     return decoded_words
 
 
-input_text = "Пример текста"
+input_text = "Программирование на Python становится всё популярнее."
 print(input_text)
 #input_text = input("Введите текст: ")
 #keywords = extract_keywords(input_text)
