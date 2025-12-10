@@ -1,0 +1,35 @@
+# Исключение временных файлов и каталогов
+*.log
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Конфиденциальные ключи и настройки
+.env
+config.yaml
+secrets.json
+
+# Кэшированные и скомпилированные файлы
+__pycache__
+*.pyc
+*.so
+
+# Директория виртуальной среды
+.venv/
+env/
+
+# Временные сборочные артефакты
+build/
+dist/
+
+# Система контроля версий
+.git/
+.gitignore
+.gitattributes
+
+# Логи Selenium и драйверов браузера
+chromedriver.log
+geckodriver.log
+selenoid-browser.log
