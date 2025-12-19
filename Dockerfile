@@ -1,15 +1,19 @@
-# Использование базы с конкретной версией PyTorch и CUDA
-FROM pytorch/pytorch:2.2.1-cuda11.8-cudnn8-runtime
+# Используем образ от PyTorch как самую стабильную базу для ИИ
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
 
-# Обновляем пакеты и устанавливаем браузерные компоненты
-RUN apt-get update && \
-    apt-get install -y chromium-chromedriver wget unzip xvfb fonts-noto-color-emoji libgconf-2-4
+# Устанавливаем системные зависимости для работы с текстом
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-# Ставим нужные Python-библиотеки
-RUN pip install selenium webdriver-manager requests transformers django beautifulsoup4
+# Ставим обе ваши библиотеки
+RUN pip install --no-cache-dir transformers==4.30.0 pymorphy3
 
-# Скопируем скрипт внутрь контейнера
-COPY test3.py .
+# Скачиваем русскую модель заранее
+RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('DeepPavlov/rubert-base-cased')"
 
-# Команда запуска скрипта
-CMD ["python", "test3.py"]
+# Скачиваем русскую модель заранее
+RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('DeepPavlov/rubert-base-cased')"
+
+# Копируем файл test3.py в контейнер
+COPY test3.py /app/
+
+WORKDIR /app
