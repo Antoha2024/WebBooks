@@ -13,7 +13,7 @@ RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretra
 # Скачиваем русскую модель заранее
 RUN python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('DeepPavlov/rubert-base-cased')"
 
-# Копируем файл test3.py в контейнер
-COPY test3.py /app/
+# Копируем файл ai_dictinary.py в контейнер
+COPY ai_dictinary.py /app/
 
 WORKDIR /app

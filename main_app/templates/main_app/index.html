@@ -1,47 +1,746 @@
-<!-- templates/main_app/index.html -->
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Корпус русского языка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корпус русского языка и галерея изображений</title>
     <style>
-        label, input, button {
+        /* Общий стиль */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #444;
+            margin-top: 40px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        /* Поля ввода и кнопки */
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        /* Сообщения */
+        #result-message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        /* Контейнер галереи */
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        #drop-zone {
+            min-height: 200px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: #fafafa;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+            align-items: flex-start;
+            position: relative;
+        }
+        
+        .drop-zone-active {
+            border-color: #4CAF50;
+            background-color: #f0fff0;
+        }
+        
+        .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            user-select: none;
+            z-index: 1;
+        }
+        
+        .image-container.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 1000;
+        }
+        
+        .image-container.drag-over {
+            border: 2px dashed #4CAF50;
+            border-radius: 4px;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .preview-image {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: block;
+            pointer-events: none;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 20px;
+            padding: 0;
+            text-align: center;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        
+        .delete-btn:hover {
+            opacity: 1;
+        }
+        
+        .drop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px dashed #4CAF50;
+            border-radius: 8px;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .drop-overlay.active {
+            display: block;
+        }
+        
+        .drop-indicator {
+            position: absolute;
+            height: 3px;
+            background: #4CAF50;
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+            width: 200px;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.8);
+        }
+        
+        .drop-indicator.visible {
+            display: block;
+        }
+        
+        .file-input-button {
+            display: inline-block;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .file-input-button:hover {
+            background-color: #1976D2;
+        }
+        
+        .controls {
+            margin-top: 20px;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .drop-zone-placeholder {
+            color: #888;
+            font-size: 16px;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+            
+            .preview-image {
+                width: 150px;
+                height: 100px;
+            }
+            
+            .drop-indicator {
+                width: 150px;
+            }
+            
+            .image-container {
+                margin: 5px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Национальный корпус русского языка</h1>
+    <h1>Национальный корпус русского языка и галерея изображений</h1>
 
-    <form id="corpus-search-form" action="/search/" method="post">
+    <!-- Поле для ввода текста и кнопка озвучивания -->
+    <form id="text-speech-form">
         {% csrf_token %}
-        <label for="search-term">Введите слово для поиска:</label>
-        <input type="text" id="search-term" name="search_term" placeholder="Например, дом" required/>
-        <button type="submit">Искать</button>
+        <label for="search-term">Введите текст для озвучивания:</label>
+        <textarea id="search-term" rows="4" name="search_term" placeholder="Введите текст для преобразования в речь..."></textarea>
+        <button type="submit">Озвучить текст</button>
     </form>
 
     <div id="result-message"></div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function(){
-    $('#corpus-search-form').submit(function(e){
-        e.preventDefault();
-        $.ajax({
-            type: $(this).attr('method'),
-            url: $(this).attr('action'),
-            data: $(this).serialize(),
-            success: function(data){
-                $('#result-message').text(data.message || 'Операция выполнена.');
-            },
-            error: function(xhr, status, error){
-                $('#result-message').text('Возникла ошибка при выполнении запроса.');
+    <!-- Галерея изображений -->
+    <h2>Галерея изображений</h2>
+    <div class="container">
+        <div id="drop-zone">
+            <div class="drop-zone-placeholder" id="drop-zone-message">
+                Перетащите изображения сюда или нажмите кнопку ниже<br>
+                <small>Максимум 5 изображений</small>
+            </div>
+            <div class="drop-overlay" id="drop-overlay"></div>
+            <div class="drop-indicator" id="drop-indicator"></div>
+        </div>
+        
+        <div class="controls">
+            <label class="file-input-button" for="file-input">
+                Выберите файлы
+            </label>
+            <input type="file" id="file-input" multiple accept="image/*" />
+            <button onclick="clearGallery()">Очистить галерею</button>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#text-speech-form').submit(function (e) {
+                e.preventDefault();
+                
+                const text = $('#search-term').val().trim();
+                if (!text) {
+                    showMessage('Введите текст для озвучивания', true);
+                    return;
+                }
+                
+                showMessage('Обработка... Пожалуйста, подождите...', false);
+                
+                $.ajax({
+                    type: 'POST',
+                    url: "/speak/",
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.error) {
+                            showMessage('Ошибка: ' + response.error, true);
+                        } else {
+                            showMessage(response.message || 'Текст успешно озвучен!', false);
+                            
+                            // Воспроизводим звук
+                            if (response.audio_url) {
+                                var audio = new Audio(response.audio_url);
+                                audio.play().catch(function(error) {
+                                    console.log('Ошибка воспроизведения:', error);
+                                    showMessage('Аудио готово, но автоматическое воспроизведение заблокировано. Нажмите <a href="' + response.audio_url + '" target="_blank">здесь</a> для прослушивания', false);
+                                });
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        let errorMsg = 'Возникла ошибка при выполнении запроса.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        showMessage(errorMsg, true);
+                    }
+                });
+            });
+        });
+
+        // Функция для отображения сообщений
+        function showMessage(message, isError) {
+            const messageDiv = $('#result-message');
+            messageDiv.html(message);
+            messageDiv.removeClass('error');
+            
+            if (isError) {
+                messageDiv.addClass('error');
+            } else {
+                messageDiv.css('display', 'block');
+            }
+            
+            // Автоматическое скрытие успешных сообщений через 5 секунд
+            if (!isError && message !== 'Обработка... Пожалуйста, подождите...') {
+                setTimeout(function() {
+                    messageDiv.fadeOut(1000, function() {
+                        $(this).text('').removeClass('error').show();
+                    });
+                }, 5000);
+            }
+        }
+
+        // Переменные для Drag and Drop
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const dropZoneMessage = document.getElementById('drop-zone-message');
+        const dropOverlay = document.getElementById('drop-overlay');
+        const dropIndicator = document.getElementById('drop-indicator');
+        let imageCount = 0;
+        const maxImages = 5;
+        let draggedElement = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        // Настраиваем Drag and Drop для элементов
+        function setupDragAndDrop() {
+            const containers = dropZone.querySelectorAll('.image-container');
+            
+            containers.forEach((container, index) => {
+                // Устанавливаем атрибут draggable
+                container.setAttribute('draggable', 'true');
+                container.dataset.index = index;
+                
+                // Очищаем старые классы
+                container.classList.remove('drag-over');
+                
+                // Удаляем старые обработчики
+                container.removeEventListener('dragstart', handleDragStart);
+                container.removeEventListener('dragend', handleDragEnd);
+                container.removeEventListener('dragover', handleDragOver);
+                container.removeEventListener('dragenter', handleDragEnter);
+                container.removeEventListener('dragleave', handleDragLeave);
+                container.removeEventListener('drop', handleDrop);
+                
+                // Добавляем новые обработчики
+                container.addEventListener('dragstart', handleDragStart);
+                container.addEventListener('dragend', handleDragEnd);
+                container.addEventListener('dragover', handleDragOver);
+                container.addEventListener('dragenter', handleDragEnter);
+                container.addEventListener('dragleave', handleDragLeave);
+                container.addEventListener('drop', handleDrop);
+            });
+            
+            // Обновляем индексы после настройки
+            updateElementIndexes();
+        }
+
+        // Обновление индексов элементов
+        function updateElementIndexes() {
+            const containers = dropZone.querySelectorAll('.image-container');
+            containers.forEach((container, index) => {
+                container.dataset.index = index;
+            });
+        }
+
+        // Обработчики событий Drag and Drop
+        function handleDragStart(e) {
+            draggedElement = this;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.index);
+            
+            // Устанавливаем overlay
+            dropOverlay.classList.add('active');
+            
+            console.log('Начало перетаскивания элемента', this.dataset.index);
+        }
+
+        function handleDragEnd(e) {
+            const containers = dropZone.querySelectorAll('.image-container');
+            containers.forEach(container => {
+                container.classList.remove('dragging');
+                container.classList.remove('drag-over');
+            });
+            
+            draggedElement = null;
+            
+            // Скрываем overlay и индикатор
+            dropOverlay.classList.remove('active');
+            dropIndicator.classList.remove('visible');
+            
+            console.log('Конец перетаскивания');
+            console.log('Текущий порядок:');
+            containers.forEach((container, index) => {
+                console.log(`${index}: ${container.querySelector('img').alt}`);
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (!draggedElement || this === draggedElement) {
+                return false;
+            }
+            
+            const rect = this.getBoundingClientRect();
+            const dropZoneRect = dropZone.getBoundingClientRect();
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            // Определяем позицию курсора относительно элемента
+            const relativeX = mouseX - rect.left;
+            const relativeY = mouseY - rect.top;
+            
+            // Определяем куда вставлять (левая/правая половина)
+            const insertBefore = relativeX < rect.width / 2;
+            
+            // Позиционируем индикатор
+            dropIndicator.style.width = rect.width + 'px';
+            dropIndicator.style.height = rect.height + 'px';
+            dropIndicator.style.left = rect.left - dropZoneRect.left + 'px';
+            
+            if (insertBefore) {
+                // Вставляем перед элементом
+                dropIndicator.style.top = rect.top - dropZoneRect.top + 'px';
+            } else {
+                // Вставляем после элемента
+                dropIndicator.style.top = rect.bottom - dropZoneRect.top + 'px';
+            }
+            
+            dropIndicator.classList.add('visible');
+            
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            
+            if (!draggedElement || this === draggedElement) {
+                return;
+            }
+            
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            
+            if (!this.contains(e.relatedTarget)) {
+                this.classList.remove('drag-over');
+                dropIndicator.classList.remove('visible');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!draggedElement || this === draggedElement) {
+                return false;
+            }
+            
+            const rect = this.getBoundingClientRect();
+            const mouseX = e.clientX;
+            const relativeX = mouseX - rect.left;
+            
+            // Определяем куда вставлять (левая/правая половина)
+            const insertBefore = relativeX < rect.width / 2;
+            
+            // Получаем все элементы
+            const containers = Array.from(dropZone.querySelectorAll('.image-container'));
+            const draggedIndex = containers.indexOf(draggedElement);
+            const targetIndex = containers.indexOf(this);
+            
+            console.log(`Перемещаем элемент ${draggedIndex} ${insertBefore ? 'перед' : 'после'} элемента ${targetIndex}`);
+            
+            if (draggedIndex < targetIndex && insertBefore) {
+                // Перетаскиваем вниз, вставляем перед целевым элементом
+                dropZone.insertBefore(draggedElement, this);
+            } else if (draggedIndex < targetIndex && !insertBefore) {
+                // Перетаскиваем вниз, вставляем после целевого элемента
+                dropZone.insertBefore(draggedElement, this.nextSibling);
+            } else if (draggedIndex > targetIndex && insertBefore) {
+                // Перетаскиваем вверх, вставляем перед целевым элементом
+                dropZone.insertBefore(draggedElement, this);
+            } else if (draggedIndex > targetIndex && !insertBefore) {
+                // Перетаскиваем вверх, вставляем после целевого элемента
+                dropZone.insertBefore(draggedElement, this.nextSibling);
+            }
+            
+            // Обновляем индексы
+            updateElementIndexes();
+            
+            // Убираем стили
+            this.classList.remove('drag-over');
+            dropIndicator.classList.remove('visible');
+            
+            return false;
+        }
+
+        // Обработка загруженных файлов
+        function handleFiles(files) {
+            const remainingSlots = maxImages - imageCount;
+            const filesToProcess = Math.min(files.length, remainingSlots);
+            
+            if (filesToProcess <= 0) {
+                alert(`Максимальное количество изображений: ${maxImages}`);
+                return;
+            }
+            
+            // Массив для хранения промисов чтения файлов
+            const readPromises = [];
+            
+            for (let i = 0; i < filesToProcess; i++) {
+                const file = files[i];
+                
+                // Проверяем тип файла
+                if (!file.type.match('image.*')) {
+                    alert(`Файл "${file.name}" не является изображением. Пропускаем.`);
+                    continue;
+                }
+                
+                // Создаем промис для чтения файла
+                const readPromise = new Promise((resolve, reject) => {
+                    let reader = new FileReader();
+
+                    reader.onload = function (event) {
+                        resolve({
+                            data: event.target.result,
+                            file: file
+                        });
+                    };
+
+                    reader.onerror = function() {
+                        reject(`Ошибка при чтении файла: ${file.name}`);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+                
+                readPromises.push(readPromise);
+            }
+            
+            // Обрабатываем все прочитанные файлы
+            Promise.all(readPromises)
+                .then(results => {
+                    results.forEach(result => {
+                        createImageContainer(result.data, result.file);
+                    });
+                    
+                    // Скрываем сообщение-заглушку
+                    dropZoneMessage.style.display = 'none';
+                    updateDropZoneMessage();
+                    
+                    // Настраиваем Drag and Drop для новых элементов
+                    setTimeout(setupDragAndDrop, 10);
+                })
+                .catch(error => {
+                    alert(error);
+                });
+            
+            // Очищаем input
+            fileInput.value = '';
+        }
+
+        // Создание контейнера для изображения
+        function createImageContainer(imageData, file) {
+            // Создаем контейнер для изображения
+            const container = document.createElement('div');
+            container.className = 'image-container';
+            container.setAttribute('data-filename', file.name);
+            
+            // Создаем изображение
+            const image = document.createElement('img');
+            image.className = 'preview-image';
+            image.src = imageData;
+            image.alt = file.name;
+            image.title = file.name;
+            
+            // Создаем кнопку удаления
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.title = 'Удалить изображение';
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                container.remove();
+                imageCount--;
+                updateDropZoneMessage();
+                
+                // Если изображений не осталось, показываем сообщение
+                if (imageCount === 0) {
+                    dropZoneMessage.style.display = 'block';
+                }
+                
+                // Настраиваем Drag and Drop для оставшихся элементов
+                setupDragAndDrop();
+            };
+            
+            // Добавляем элементы в контейнер
+            container.appendChild(image);
+            container.appendChild(deleteBtn);
+            
+            // Добавляем контейнер в drop-zone
+            dropZone.appendChild(container);
+            
+            imageCount++;
+        }
+
+        // Обновление сообщения в drop-zone
+        function updateDropZoneMessage() {
+            if (imageCount === 0) {
+                dropZoneMessage.innerHTML = 'Перетащите изображения сюда или нажмите кнопку ниже<br><small>Максимум 5 изображений</small>';
+                dropZoneMessage.style.display = 'block';
+            } else {
+                dropZoneMessage.innerHTML = `Загружено изображений: ${imageCount}/${maxImages}<br><small>Перетаскивайте изображения для изменения порядка</small>`;
+                dropZoneMessage.style.display = 'none';
+            }
+        }
+
+        // Выбор файлов вручную
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+        // Кнопка для выбора файлов
+        document.querySelector('.file-input-button').addEventListener('click', function(e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+
+        // Очистка галереи
+        window.clearGallery = function() {
+            const containers = dropZone.querySelectorAll('.image-container');
+            containers.forEach(container => {
+                container.remove();
+            });
+            imageCount = 0;
+            updateDropZoneMessage();
+            
+            // Показываем сообщение
+            dropZoneMessage.style.display = 'block';
+        };
+
+        // Обработка перетаскивания файлов в drop-zone
+        ['dragenter', 'dragover'].forEach((eventType) => {
+            dropZone.addEventListener(eventType, e => {
+                e.preventDefault();
+                dropZone.classList.add('drop-zone-active');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach((eventType) => {
+            dropZone.addEventListener(eventType, e => {
+                e.preventDefault();
+                dropZone.classList.remove('drop-zone-active');
+            });
+        });
+
+        // Загрузка файлов прямо в зону перетаскивания
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drop-zone-active');
+            
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
             }
         });
-    });
-});
-</script>
+        
+        // Инициализация сообщения
+        updateDropZoneMessage();
+        
+        // Тестовые изображения для отладки (раскомментируйте для тестирования)
+        /*
+        setTimeout(() => {
+            console.log('Добавляем тестовые изображения для отладки...');
+            // Создаем тестовые файлы
+            const testImages = [
+                'https://via.placeholder.com/200x150/FF0000/FFFFFF?text=Image+1',
+                'https://via.placeholder.com/200x150/00FF00/FFFFFF?text=Image+2',
+                'https://via.placeholder.com/200x150/0000FF/FFFFFF?text=Image+3'
+            ];
+            
+            testImages.forEach((url, index) => {
+                createImageContainer(url, { name: `Тестовое изображение ${index + 1}` });
+            });
+            
+            dropZoneMessage.style.display = 'none';
+            updateDropZoneMessage();
+            setTimeout(setupDragAndDrop, 100);
+        }, 1000);
+        */
+        
+        console.log('Галерея инициализирована. Drag and Drop будет настроен при добавлении изображений.');
+    </script>
 </body>
 </html>

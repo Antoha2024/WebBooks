@@ -1,61 +1,53 @@
-# main_app/views.py
-
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
-import requests
-from bs4 import BeautifulSoup
-import csv
+from gtts import gTTS
+import uuid
 import os
+from django.conf import settings
 
 def index(request):
     return render(request, 'main_app/index.html')
 
 def translator(request):
+    pass  # Этот метод пока пуст
+
+def speak(request):
     if request.method == 'POST':
-        term = request.POST.get('search_term')
-        start_url = "https://ruscorpora.ru/"
-        search_data = {
-            'q': term,
-            'mode': 'basic',
-            'lang': 'en'
-        }
-
-        session = requests.Session()
-        initial_response = session.get(start_url)
-
-        if initial_response.status_code != 200:
-            return JsonResponse({'error': f"Ошибка при подключении к начальной странице: статус-код {initial_response.status_code}"})
-
-        search_response = session.post(start_url, data=search_data)
-
-        if search_response.status_code != 200:
-            return JsonResponse({'error': f"Ошибка при поиске: статус-код {search_response.status_code}"})
-
-        soup = BeautifulSoup(search_response.content, 'html.parser')
-        results = []
-
-        # Теперь ищем теги span с классом 'hit word'
-        for hit_span in soup.find_all('span', class_='hit word'):
-            # Берём ближайшего родителя (родительский div или p), содержащий предложение
-            parent_element = hit_span.find_parent(['div', 'p'])
-            if parent_element:
-                sentence = parent_element.text.strip()
-                results.append(sentence)
-
-        # Промежуточный лог
-        print(f"Results count: {len(results)}, first item: {results[:3]}")
-
-        # Если результатов нет, возвращаем ошибку
-        if len(results) == 0:
-            return JsonResponse({'error': 'No results found!'})
-
-        # Сохраняем результаты в CSV-файл
-        output_path = 'examples_dataset.csv'
-        with open(output_path, mode='a', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            for row in results:
-                writer.writerow([term, row])
-
-        return JsonResponse({'message': f'Результаты сохранены в "{output_path}".'})
-
-    return render(request, 'index.html')
+        text = request.POST.get('search_term')
+        
+        if not text or text.strip() == '':
+            return JsonResponse({'error': 'Введите текст для озвучивания'}, status=400)
+        
+        # Создаем директорию media, если она не существует
+        media_dir = settings.MEDIA_ROOT
+        if not os.path.exists(media_dir):
+            os.makedirs(media_dir)
+            print(f"Создана директория: {media_dir}")
+        
+        try:
+            tts = gTTS(text=text, lang='ru')
+            
+            # Уникальное имя файла
+            filename = f'speech_{uuid.uuid4().hex}.mp3'
+            filepath = os.path.join(media_dir, filename)
+            
+            # Сохраняем файл в MEDIA_ROOT
+            tts.save(filepath)
+            
+            # Формируем URL к файлу
+            audio_url = f'{settings.MEDIA_URL}{filename}'
+            
+            # Ответ с информацией о файле
+            response_data = {
+                'audio_url': audio_url,
+                'message': 'Текст успешно озвучен',
+                'filename': filename
+            }
+            return JsonResponse(response_data)
+        
+        except Exception as e:
+            print(f"Ошибка при сохранении файла: {e}")
+            return JsonResponse({'error': f'Ошибка при создании аудиофайла: {str(e)}'}, status=500)
+    
+    else:
+        return redirect('/')
