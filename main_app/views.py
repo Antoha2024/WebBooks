@@ -5,13 +5,20 @@ import uuid
 import os
 from django.conf import settings
 
-def index(request):
-    return render(request, 'main_app/index.html')
+def home(request):
+    """Новая главная страница с кнопками Анимация и Озвучка"""
+    return render(request, 'main_app/home.html')
 
-def translator(request):
-    pass  # Этот метод пока пуст
+def animation_view(request):
+    """Страница с галереей изображений (Drag & Drop интерфейс)"""
+    return render(request, 'main_app/animation.html')
+
+def voice_view(request):
+    """Страница с формой для озвучки текста"""
+    return render(request, 'main_app/voice.html')
 
 def speak(request):
+    """Обработчик AJAX запросов для озвучки текста"""
     if request.method == 'POST':
         text = request.POST.get('search_term')
         
@@ -50,4 +57,4 @@ def speak(request):
             return JsonResponse({'error': f'Ошибка при создании аудиофайла: {str(e)}'}, status=500)
     
     else:
-        return redirect('/')
+        return redirect('home')

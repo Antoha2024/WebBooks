@@ -1,30 +1,18 @@
 """
 URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
 from django.urls import path
 from django.conf import settings
-from django.conf.urls.static import static  # Добавлено для обслуживания медиафайлов
-from main_app.views import index, translator, speak
+from django.conf.urls.static import static
+from main_app.views import home, animation_view, voice_view, speak
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='index'),
-    path('search/', translator, name='translator'),
-    path('speak/', speak, name='speak'),
+    path('', home, name='home'),  # Главная страница с кнопками
+    path('animation/', animation_view, name='animation'),  # Страница анимации/галереи
+    path('voice/', voice_view, name='voice'),  # Страница озвучки
+    path('speak/', speak, name='speak'),  # AJAX обработчик для озвучки
 ]
 
 # Добавляем обработку медиафайлов в режиме разработки

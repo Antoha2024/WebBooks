@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Озвучка - WebBoks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4ecdc4 0%, #2c3e50 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #5a67d8;
+            transform: translateX(-5px);
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin: 0;
+        }
+        
+        .form-container {
+            margin-top: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4ecdc4, #45b7aa);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(78,205,196,0.3);
+        }
+        
+        #result-message {
+            padding: 15px;
+            margin: 20px 0 0;
+            border-radius: 10px;
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            display: none;
+        }
+        
+        .error {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+            border: 1px solid #ffcdd2 !important;
+        }
+        
+        .success {
+            background-color: #e8f5e8 !important;
+            color: #2e7d32 !important;
+            border: 1px solid #c8e6c9 !important;
+        }
+        
+        .audio-player {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .audio-player.visible {
+            display: block;
+        }
+        
+        .audio-player audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .features-mini {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .feature-mini {
+            flex: 1;
+            text-align: center;
+            color: #666;
+        }
+        
+        .feature-mini span {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .features-mini {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="{% url 'home' %}" class="back-btn">← На главную</a>
+            <h1>🎤 ИИ-озвучка текста</h1>
+        </div>
+        
+        <div class="form-container">
+            <form id="text-speech-form">
+                {% csrf_token %}
+                <label for="search-term">Введите текст для озвучивания:</label>
+                <textarea id="search-term" rows="6" name="search_term" placeholder="Например: Привет! Это тестовая озвучка с помощью искусственного интеллекта.">Привет! Это тестовая озвучка с помощью искусственного интеллекта.</textarea>
+                <button type="submit">🎤 Озвучить текст</button>
+            </form>
+            
+            <div id="result-message"></div>
+            
+            <div class="audio-player" id="audio-player">
+                <h3>Готово! Ваша озвучка:</h3>
+                <audio id="audio-element" controls>
+                    <source src="" type="audio/mpeg">
+                    Ваш браузер не поддерживает аудио элемент.
+                </audio>
+            </div>
+        </div>
+        
+        <div class="features-mini">
+            <div class="feature-mini">
+                <span>🔊</span>
+                <small>Естественное звучание</small>
+            </div>
+            <div class="feature-mini">
+                <span>⚡</span>
+                <small>Мгновенная генерация</small>
+            </div>
+            <div class="feature-mini">
+                <span>🌍</span>
+                <small>Поддержка русского языка</small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const audioPlayer = document.getElementById('audio-player');
+            const audioElement = document.getElementById('audio-element');
+            
+            $('#text-speech-form').submit(function (e) {
+                e.preventDefault();
+                
+                const text = $('#search-term').val().trim();
+                if (!text) {
+                    showMessage('Введите текст для озвучивания', true);
+                    return;
+                }
+                
+                showMessage('🔄 Обработка... Пожалуйста, подождите...', false);
+                audioPlayer.classList.remove('visible');
+                
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'speak' %}",
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.error) {
+                            showMessage('❌ Ошибка: ' + response.error, true);
+                        } else {
+                            showMessage('✅ ' + response.message, false);
+                            
+                            if (response.audio_url) {
+                                // Обновляем источник аудио
+                                audioElement.src = response.audio_url;
+                                audioElement.load();
+                                audioPlayer.classList.add('visible');
+                                
+                                // Пытаемся воспроизвести автоматически
+                                audioElement.play().catch(function(error) {
+                                    console.log('Автовоспроизведение заблокировано:', error);
+                                });
+                            }
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        let errorMsg = 'Возникла ошибка при выполнении запроса.';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        showMessage('❌ ' + errorMsg, true);
+                    }
+                });
+            });
+        });
+
+        function showMessage(message, isError) {
+            const messageDiv = $('#result-message');
+            messageDiv.html(message).removeClass('error success');
+            
+            if (isError) {
+                messageDiv.addClass('error');
+            } else if (message.includes('✅') || message.includes('Обработка')) {
+                messageDiv.addClass('success');
+            }
+            
+            messageDiv.fadeIn(300);
+            
+            // Автоматически скрываем сообщение через 7 секунд (кроме сообщений об обработке)
+            if (!isError && !message.includes('Обработка')) {
+                setTimeout(function() {
+                    messageDiv.fadeOut(1000);
+                }, 7000);
+            }
+        }
+    </script>
+</body>
+</html>

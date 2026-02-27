@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebBoks - Главная</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease;
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.95);
+            font-size: 1.3em;
+            margin-bottom: 50px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+        
+        .btn {
+            padding: 25px 80px;
+            font-size: 1.8em;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-animation {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .btn-animation:hover {
+            background: #ff5252;
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 30px rgba(255,107,107,0.4);
+        }
+        
+        .btn-voice {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .btn-voice:hover {
+            background: #45b7aa;
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 30px rgba(78,205,196,0.4);
+        }
+        
+        .features {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 60px;
+            animation: fadeInUp 1s ease 0.9s both;
+        }
+        
+        .feature {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            width: 300px;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .feature h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .feature p {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+            
+            .btn {
+                padding: 20px 50px;
+                font-size: 1.5em;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .feature {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 WebBoks</h1>
+        <div class="subtitle">
+            Платформа для создания анимационных мультфильмов<br>с ИИ-озвучкой текста
+        </div>
+        
+        <div class="buttons">
+            <a href="{% url 'animation' %}" class="btn btn-animation">
+                🎬 Анимация
+            </a>
+            <a href="{% url 'voice' %}" class="btn btn-voice">
+                🎤 Озвучка
+            </a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <h3>Drag & Drop</h3>
+                <p>Загружайте до 5 изображений простым перетаскиванием и управляйте их порядком</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🤖</div>
+                <h3>ИИ-озвучка</h3>
+                <p>Преобразуйте любой текст в речь с помощью искусственного интеллекта</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Мгновенно</h3>
+                <p>Создавайте анимации и получайте озвучку в реальном времени</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
